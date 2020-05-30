@@ -50,6 +50,7 @@ class MainFragment : Fragment() {
                 if (savedState != null) {
                     mapView.setCenterZoom(savedState?.getParcelable(BundleKeys.MAP_CENTER),
                         savedState?.getInt(BundleKeys.MAP_ZOOM)!!)
+                    createObserver()
                 }
             }
         })
@@ -75,7 +76,6 @@ class MainFragment : Fragment() {
         })
 
         if (savedState != null) {
-            createObserver()
             syncDelay = savedState?.getInt(BundleKeys.SYNC_DELAY)!!
             searchText.editText?.setText(savedState?.getString(BundleKeys.SEARCH_TEXT))
             searchButton.change(savedState?.getBoolean(BundleKeys.BUTTON_STATE)!!)
