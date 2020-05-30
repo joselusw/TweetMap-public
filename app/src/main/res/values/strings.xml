@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">TweetMap</string>
+    <string name="refresh">refresh</string>
+    <string name="numpick_title">Sync delay</string>
+    <string name="numpick_msg">Select amount of seconds to retrieve new tweets</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="splash_desc">SplashScreen logo</string>
+</resources>
