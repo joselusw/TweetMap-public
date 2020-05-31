@@ -2,6 +2,7 @@ package com.jsw.tweetmap.ui.main
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import com.jsw.tweetmap.model.Tweet
 import com.jsw.tweetmap.repository.TweetRepository
@@ -30,7 +31,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * This function stops the automatic data retrieval
      */
-    fun stopSearch() {
+    fun stopSearch(viewLifecycleOwner: LifecycleOwner) {
         repository.stopSearch()
+        tweets.removeObservers(viewLifecycleOwner)
+    }
+
+    fun getObservers() : Boolean {
+        return tweets.hasActiveObservers()
     }
 }

@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.NumberPicker
@@ -23,7 +24,7 @@ import com.jsw.tweetmap.MainActivity
 import com.jsw.tweetmap.R
 import com.jsw.tweetmap.interfaces.BundleKeys
 import com.jsw.tweetmap.model.Tweet
-import com.ohoussein.playpause.PlayPauseView
+import com.romancha.playpause.PlayPauseView
 
 
 class MainFragment : Fragment() {
@@ -50,37 +51,42 @@ class MainFragment : Fragment() {
                 if (savedState != null) {
                     mapView.setCenterZoom(savedState?.getParcelable(BundleKeys.MAP_CENTER),
                         savedState?.getInt(BundleKeys.MAP_ZOOM)!!)
-                    createObserver()
                 }
             }
         })
 
         searchButton.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
-                if (searchButton.isPlay == true) {
-                    searchButton.change(!searchButton.isPlay, true)
+                if (searchButton.onPlaying() == true) {
+                    searchButton.toggle(true)
                     activity?.hideKeyboard(view)
                     createObserver()
                 } else {
-                    viewModel.stopSearch()
-                    searchButton.change(!searchButton.isPlay)
+                    searchButton.toggle(true)
+                    stopSearch()
                 }
             }
         })
 
         mapView.setOnMarkerClickListener(object : OnMapMarkerClickListener {
             override fun onMapMarkerClick(airMarker: AirMapMarker<*>?) {
+                searchButton.toggle(false)
+                stopSearch()
                 val tweet = viewModel.getTweetByID(airMarker?.id)
                 (activity as MainActivity).openDetails(tweet)
             }
         })
 
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         if (savedState != null) {
             syncDelay = savedState?.getInt(BundleKeys.SYNC_DELAY)!!
             searchText.editText?.setText(savedState?.getString(BundleKeys.SEARCH_TEXT))
-            searchButton.change(savedState?.getBoolean(BundleKeys.BUTTON_STATE)!!)
         }
-        return view
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -133,38 +139,33 @@ class MainFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        super.onDestroyView()
         // Save our instance vars into bundle
         savedState = Bundle()
         savedState?.putInt(BundleKeys.SYNC_DELAY, syncDelay)
         savedState?.putInt(BundleKeys.MAP_ZOOM, mapView.zoom)
-        savedState?.putBoolean(BundleKeys.BUTTON_STATE, searchButton.isPlay)
         savedState?.putString(BundleKeys.SEARCH_TEXT, searchText.editText?.text.toString())
         savedState?.putParcelable(BundleKeys.MAP_CENTER, mapView.center)
-        viewModel.stopSearch()
-        super.onDestroyView()
     }
-
 
     /*** SUPPORT FUNCTIONS ***/
     private fun createObserver() {
         viewModel.getTweets(searchText.editText?.text.toString(), syncDelay)
             .observe(viewLifecycleOwner,
-                object : Observer<List<Tweet>?> {
-                    override fun onChanged(t: List<Tweet>?) {
-                        if (t != null) {
-                            for (tmp: Tweet in t) {
-                                mapView.addMarker(
-                                    AirMapMarker.Builder<Any?>()
-                                        .position(LatLng(tmp.geoLocation.latitude, tmp.geoLocation.longitude))
-                                        .iconId(R.drawable.twitter)
-                                        .title(tmp.user)
-                                        .id(tmp.id)
-                                        .build()
-                                )
-                            }
-                        } else {
-                            mapView.clearMarkers()
+                Observer<List<Tweet>?> { t ->
+                    if (t != null) {
+                        for (tmp: Tweet in t) {
+                            mapView.addMarker(
+                                AirMapMarker.Builder<Any?>()
+                                    .position(LatLng(tmp.geoLocation.latitude, tmp.geoLocation.longitude))
+                                    .iconId(R.drawable.twitter)
+                                    .title(tmp.user)
+                                    .id(tmp.id)
+                                    .build()
+                            )
                         }
+                    } else {
+                        mapView.clearMarkers()
                     }
                 }
             )
@@ -173,6 +174,11 @@ class MainFragment : Fragment() {
     fun Context.hideKeyboard(view: View) {
         val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    fun stopSearch() {
+        viewModel.stopSearch(viewLifecycleOwner)
+        mapView.clearMarkers()
     }
 
     companion object {

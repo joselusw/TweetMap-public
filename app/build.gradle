@@ -58,7 +58,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.1.0'
 
     //PlayPauseButton
-    implementation 'com.github.ohoussein.playpauseview:playpauseview:1.0.2'
+    implementation 'com.github.romancha:MaterialPlayPauseViewButton:1.0.1'
 
     //CircleImageView
     implementation 'de.hdodenhof:circleimageview:3.0.1'

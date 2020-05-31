@@ -2,7 +2,6 @@ package com.jsw.tweetmap.interfaces
 
 interface BundleKeys {
     companion object {
-        const val BUTTON_STATE: String = "BUTTON"
         const val MAP_CENTER: String = "CENTER"
         const val MAP_ZOOM: String = "ZOOM"
         const val SEARCH_TEXT: String = "SEARCH"
